@@ -1,0 +1,419 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#canvas-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+.controls-hint {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font: 13px/1.4 system-ui, sans-serif;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Speedometer HUD */
+.speedometer {
+  --gauge-accent: #ff5a36;
+  --gauge-rpm: #ffb020;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 200px;
+  height: 200px;
+  pointer-events: none;
+  user-select: none;
+  font-family: system-ui, sans-serif;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
+}
+
+.speedometer.boosting {
+  --gauge-accent: #36d6ff;
+  --gauge-rpm: #36d6ff;
+}
+
+.speedometer svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.speedometer-face {
+  fill: rgba(12, 14, 20, 0.78);
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1.5;
+}
+
+.speedometer-rpm-track,
+.speedometer-rpm-redline,
+.speedometer-rpm-fill {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.speedometer-rpm-track {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.speedometer-rpm-redline {
+  stroke: rgba(255, 40, 40, 0.45);
+}
+
+.speedometer-rpm-fill {
+  stroke: var(--gauge-rpm);
+  transition: stroke 0.2s;
+}
+
+.speedometer.redline .speedometer-rpm-fill {
+  stroke: #ff2828;
+}
+
+.speedometer-tick {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 1;
+}
+
+.speedometer-tick.major {
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.speedometer-label {
+  fill: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.speedometer-needle {
+  fill: var(--gauge-accent);
+  transition: fill 0.2s;
+}
+
+.speedometer-hub {
+  fill: #1c1f28;
+  stroke: var(--gauge-accent);
+  stroke-width: 2;
+}
+
+.speedometer-readout {
+  position: absolute;
+  left: 50%;
+  top: 64%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  line-height: 1;
+}
+
+.speedometer-speed {
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.speedometer-unit {
+  margin-top: 2px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.speedometer-gear {
+  margin-top: 5px;
+  min-width: 20px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--gauge-accent);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+@media (max-width: 600px) {
+  .speedometer {
+    width: 140px;
+    height: 140px;
+    right: 12px;
+    bottom: 56px;
+  }
+
+  .speedometer-speed {
+    font-size: 19px;
+  }
+}
+
+/* Vehicle select screen */
+.vehicle-select {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 24px 16px;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at center, rgba(8, 10, 16, 0.55), rgba(8, 10, 16, 0.88));
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+.vehicle-select-header {
+  text-align: center;
+}
+
+.vehicle-select-eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.vehicle-select h1 {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.vehicle-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1120px;
+}
+
+.vehicle-card {
+  --card-accent: #fff;
+  flex: 1 1 280px;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(20, 23, 32, 0.85);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.vehicle-card.active {
+  transform: translateY(-6px);
+  border-color: var(--card-accent);
+  box-shadow: 0 16px 40px -12px var(--card-accent);
+}
+
+.vehicle-card:focus-visible {
+  outline: 3px solid var(--card-accent);
+  outline-offset: 3px;
+}
+
+.vehicle-card-preview {
+  position: relative;
+  height: 200px;
+  background:
+    radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--card-accent) 25%, transparent), transparent 70%),
+    #141720;
+}
+
+.vehicle-card-key {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.vehicle-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px 20px;
+}
+
+.vehicle-card h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.vehicle-card-tagline {
+  margin: -6px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.7;
+}
+
+.vehicle-stats {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.vehicle-stat {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.vehicle-stat dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.vehicle-stat dd {
+  height: 6px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.vehicle-stat dd span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--card-accent);
+}
+
+.vehicle-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vehicle-perks li {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+}
+
+.vehicle-card-cta {
+  margin-top: 4px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.vehicle-card.active .vehicle-card-cta {
+  background: var(--card-accent);
+  color: #0b0d12;
+}
+
+@media (max-width: 600px) {
+  .vehicle-select {
+    justify-content: flex-start;
+  }
+
+  .vehicle-card-preview {
+    height: 150px;
+  }
+
+  .controls-hint {
+    white-space: normal;
+    width: calc(100% - 32px);
+    text-align: center;
+  }
+}
+
+/* Camera mode badge */
+.camera-badge {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px 7px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font: 13px/1 system-ui, sans-serif;
+  pointer-events: none;
+  animation: camera-badge-pop 0.35s ease-out;
+}
+
+.camera-badge-key {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.camera-badge-label {
+  opacity: 0.6;
+}
+
+@keyframes camera-badge-pop {
+  from {
+    transform: scale(1.15);
+    background: rgba(255, 90, 54, 0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera-badge {
+    animation: none;
+  }
+}
+
+.vehicle-card-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.6);
+  font: 600 13px system-ui, sans-serif;
+  white-space: nowrap;
+}
